@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Task List</string>
+    <string name="task_list_view">Task Lists</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_new_list">New List</string>
+
+</resources>

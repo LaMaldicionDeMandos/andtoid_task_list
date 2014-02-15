@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="org.pasut.tasklist.TaskListsActivity" >
+
+    <item android:id="@+id/action_new_list"
+          android:icon="@drawable/ic_action_new"
+          android:title="@string/action_new_list"
+          android:showAsAction="always" />
+    <item android:id="@+id/action_settings"
+          android:icon="@drawable/ic_action_settings"
+        android:title="@string/action_settings"
+        android:showAsAction="collapseActionView" />
+</menu>
