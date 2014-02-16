@@ -10,15 +10,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TaskListsActivity extends ListActivity {
-
+    private List<String> lists = new ArrayList<String>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_lists);
         ActionBar actionBar = getActionBar();
         actionBar.setTitle(R.string.task_list_view);
+        setListAdapter(new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, lists));
+        getListView().setTextFilterEnabled(true);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment())
@@ -39,10 +47,17 @@ public class TaskListsActivity extends ListActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_new_list) {
+            addList();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void addList() {
+        String newItem = "New List" + lists.size();
+        lists.add(newItem);
+        ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
     }
 
     /**
