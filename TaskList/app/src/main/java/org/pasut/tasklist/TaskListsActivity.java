@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ListActivity;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,10 +13,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import org.pasut.tasklist.dataaccess.TaskListContentProvider;
+import org.pasut.tasklist.dataaccess.TaskListTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +31,8 @@ public class TaskListsActivity extends ListActivity {
         ActionBar actionBar = getActionBar();
         actionBar.setTitle(R.string.task_list_view);
         Cursor cursor = getContentResolver().query(TaskListContentProvider.CONTENT_URI, null, null, null, null);
-        setListAdapter(new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, cursor, null, null, 0));
+        setListAdapter(new SimpleCursorAdapter(this, android.R.layout.s
+                imple_list_item_1, cursor, new String[]{TaskListTable.TASK_LIST_NAME}, new int[] {android.R.id.text1}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER));
         getListView().setTextFilterEnabled(true);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
@@ -58,9 +62,10 @@ public class TaskListsActivity extends ListActivity {
     }
 
     private void addList() {
-//        String newItem = "New List" + lists.size();
-//        lists.add(newItem);
-//        ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
+        String newItem = "New List" + getListAdapter().getCount();
+        ContentValues values = new ContentValues();
+        values.put(TaskListTable.TASK_LIST_NAME, newItem);
+        getContentResolver().insert(TaskListContentProvider.CONTENT_URI_TASK_LISTS, values);
     }
 
     /**
