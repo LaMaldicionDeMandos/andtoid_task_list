@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ListActivity;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,21 +12,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
+
+import org.pasut.tasklist.dataaccess.TaskListContentProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TaskListsActivity extends ListActivity {
-    private List<String> lists = new ArrayList<String>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_lists);
         ActionBar actionBar = getActionBar();
         actionBar.setTitle(R.string.task_list_view);
-        setListAdapter(new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, lists));
+        Cursor cursor = getContentResolver().query(TaskListContentProvider.CONTENT_URI, null, null, null, null);
+        setListAdapter(new SimpleCursorAdapter(this, android.R.layout.simple_list_item_1, cursor, null, null, 0));
         getListView().setTextFilterEnabled(true);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
@@ -55,9 +58,9 @@ public class TaskListsActivity extends ListActivity {
     }
 
     private void addList() {
-        String newItem = "New List" + lists.size();
-        lists.add(newItem);
-        ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
+//        String newItem = "New List" + lists.size();
+//        lists.add(newItem);
+//        ((ArrayAdapter)getListAdapter()).notifyDataSetChanged();
     }
 
     /**
