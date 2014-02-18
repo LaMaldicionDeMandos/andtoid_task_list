@@ -19,20 +19,26 @@ import android.widget.Toast;
 
 import org.pasut.tasklist.dataaccess.TaskListContentProvider;
 import org.pasut.tasklist.dataaccess.TaskListTable;
+import org.pasut.tasklist.entity.TaskList;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TaskListsActivity extends ListActivity {
+    private List<TaskList> taskLists;
+    private TaskListEntityService service;
+    private ArrayAdapter<TaskList> adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_lists);
+        service = new TaskListEntityService(this);
         ActionBar actionBar = getActionBar();
         actionBar.setTitle(R.string.task_list_view);
-        Cursor cursor = getContentResolver().query(TaskListContentProvider.CONTENT_URI, null, null, null, null);
-        setListAdapter(new SimpleCursorAdapter(this, android.R.layout.s
-                imple_list_item_1, cursor, new String[]{TaskListTable.TASK_LIST_NAME}, new int[] {android.R.id.text1}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER));
+        taskLists = service.findAllTaskLists();
+        adapter = new ArrayAdapter<TaskList>(this, android.R.layout.simple_list_item_1, taskLists);
+        setListAdapter(adapter);
         getListView().setTextFilterEnabled(true);
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
@@ -62,10 +68,11 @@ public class TaskListsActivity extends ListActivity {
     }
 
     private void addList() {
-        String newItem = "New List" + getListAdapter().getCount();
-        ContentValues values = new ContentValues();
-        values.put(TaskListTable.TASK_LIST_NAME, newItem);
-        getContentResolver().insert(TaskListContentProvider.CONTENT_URI_TASK_LISTS, values);
+        String newItem = "New List" + taskLists.size();
+        TaskList taskList = new TaskList(newItem);
+        taskLists.add(taskList);
+        adapter.notifyDataSetChanged();
+        service.insertNewTaskList(taskList);
     }
 
     /**
