@@ -70,9 +70,9 @@ public class TaskListsActivity extends ListActivity {
     private void addList() {
         String newItem = "New List" + taskLists.size();
         TaskList taskList = new TaskList(newItem);
+        taskList = service.insertNewTaskList(taskList);
         taskLists.add(taskList);
         adapter.notifyDataSetChanged();
-        service.insertNewTaskList(taskList);
     }
 
     /**

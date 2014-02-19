@@ -16,7 +16,7 @@ import java.util.Map;
  * Created by cala on 16/02/14.
  */
 public class TaskListContentProvider extends ContentProvider {
-
+    private static final String ROWID = "ROWID = %d";
     private static final UriMatcher uriMatcher;
     private static final Map<String, String> taskListProjection;
 
@@ -27,12 +27,14 @@ public class TaskListContentProvider extends ContentProvider {
 
     public static final Uri CONTENT_URI = Uri.parse(SCHEMA + AUTHORITY + "/" + TASK_LIST);
     public static final Uri CONTENT_URI_TASK_LISTS = CONTENT_URI;
+    public static final Uri CONTENT_URI_TASK_LIST_BY_ID = Uri.parse(SCHEMA + AUTHORITY + "/" + TASK_LIST_ID);
     private static final int TASK_LIST_INT = 1;
     private static final int TASK_LIST_ID_INT = 2;
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         uriMatcher.addURI(AUTHORITY, TASK_LIST, TASK_LIST_INT);
+        uriMatcher.addURI(AUTHORITY, TASK_LIST_ID, TASK_LIST_ID_INT);
 
         taskListProjection = new HashMap<String, String>();
         taskListProjection.put(TaskListTable._ID, TaskListTable._ID);
@@ -53,6 +55,8 @@ public class TaskListContentProvider extends ContentProvider {
         switch (match) {
             case TASK_LIST_INT:
                 return findAllTaskList();
+            case TASK_LIST_ID_INT:
+                return findTaskListById(Long.valueOf(uri.getPathSegments().get(1)));
         }
         return null;
     }
@@ -67,7 +71,7 @@ public class TaskListContentProvider extends ContentProvider {
         if (uriMatcher.match(uri) == TASK_LIST_INT) {
             SQLiteDatabase database = helper.getWritableDatabase();
             long rowId = database.insert(TaskListTable.TABLE_NAME, null, contentValues);
-            Uri newListUri = ContentUris.withAppendedId(CONTENT_URI_TASK_LISTS, rowId);
+            Uri newListUri = ContentUris.withAppendedId(CONTENT_URI_TASK_LIST_BY_ID, rowId);
             return newListUri;
         }
         return uri;
@@ -87,6 +91,14 @@ public class TaskListContentProvider extends ContentProvider {
         SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
         builder.setTables(TaskListTable.TABLE_NAME);
         SQLiteDatabase db = helper.getReadableDatabase();
+        return builder.query(db, null, null, null, null, null, null);
+    }
+
+    private Cursor findTaskListById(Long id) {
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(TaskListTable.TABLE_NAME);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        builder.appendWhere(String.format(ROWID, id));
         return builder.query(db, null, null, null, null, null, null);
     }
 }
