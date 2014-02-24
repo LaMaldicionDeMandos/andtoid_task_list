@@ -1,66 +1,100 @@
 package org.pasut.tasklist;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.ListActivity;
-import android.content.ContentValues;
-import android.database.Cursor;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CursorAdapter;
-import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
-
-import org.pasut.tasklist.dataaccess.TaskListContentProvider;
-import org.pasut.tasklist.dataaccess.TaskListTable;
+import android.widget.ListView;
 import org.pasut.tasklist.entity.TaskList;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class TaskListsActivity extends ListActivity {
+public class TaskListsActivity extends Activity {
     private List<TaskList> taskLists;
     private TaskListEntityService service;
     private ArrayAdapter<TaskList> adapter;
+    private DrawerLayout drawer;
+    private ActionBarDrawerToggle drawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_lists);
+
         service = new TaskListEntityService(this);
-        ActionBar actionBar = getActionBar();
-        actionBar.setTitle(R.string.task_list_view);
+
         taskLists = service.findAllTaskLists();
         adapter = new ArrayAdapter<TaskList>(this, android.R.layout.simple_list_item_1, taskLists);
-        setListAdapter(adapter);
-        getListView().setTextFilterEnabled(true);
-        if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
-                    .commit();
-        }
+        ListView list = (ListView)findViewById(R.id.list);
+        list.setAdapter(adapter);
+        list.setTextFilterEnabled(true);
+
+        drawer = (DrawerLayout) findViewById(R.id.container);
+
+        // set a custom shadow that overlays the main content when the drawer opens
+        drawer.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        // set up the drawer's list view with items and click listener
+
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        //getActionBar().setHomeButtonEnabled(true);
+
+        // ActionBarDrawerToggle ties together the the proper interactions
+        // between the sliding drawer and the action bar app icon
+        drawerToggle = new ActionBarDrawerToggle(
+                this,                  /* host Activity */
+                drawer,         /* DrawerLayout object */
+                R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
+                R.string.drawer_open,  /* "open drawer" description for accessibility */
+                R.string.drawer_close  /* "close drawer" description for accessibility */
+        ) {
+            public void onDrawerClosed(View view) {
+                getActionBar().setTitle(R.string.task_list_view);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            public void onDrawerOpened(View drawerView) {
+                getActionBar().setTitle(R.string.task_view);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+        drawer.setDrawerListener(drawerToggle);
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    /* Called whenever we call invalidateOptionsMenu() */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        // The action bar home/up action should open or close the drawer.
+        // ActionBarDrawerToggle will take care of this.
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        // Handle action buttons
         int id = item.getItemId();
-        if (id == R.id.action_new_list) {
+        if (id == R.id.action_new_list && drawer.isDrawerOpen(findViewById(R.id.list))) {
             addList();
             return true;
         }
@@ -76,6 +110,25 @@ public class TaskListsActivity extends ListActivity {
     }
 
     /**
+     * When using the ActionBarDrawerToggle, you must call it during
+     * onPostCreate() and onConfigurationChanged()...
+     */
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggls
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    /**
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment {
@@ -85,10 +138,9 @@ public class TaskListsActivity extends ListActivity {
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
+                                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             return rootView;
         }
     }
-
 }
