@@ -7,14 +7,19 @@ import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+
 import org.pasut.tasklist.entity.TaskList;
 
 import java.util.List;
@@ -38,6 +43,20 @@ public class TaskListsActivity extends Activity {
         ListView list = (ListView)findViewById(R.id.list);
         list.setAdapter(adapter);
         list.setTextFilterEnabled(true);
+
+        final EditText text = (EditText)findViewById(R.id.list_name);
+        text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    addList();
+                    text.setVisibility(View.GONE);
+                    handled = true;
+                }
+                return handled;
+            }
+        });
 
         drawer = (DrawerLayout) findViewById(R.id.container);
 
@@ -94,19 +113,24 @@ public class TaskListsActivity extends Activity {
         }
         // Handle action buttons
         int id = item.getItemId();
-        if (id == R.id.action_new_list && drawer.isDrawerOpen(findViewById(R.id.list))) {
-            addList();
+        if (id == R.id.action_new_list && drawer.isDrawerOpen(findViewById(R.id.drawer_view))) {
+            EditText text = (EditText)findViewById(R.id.list_name);
+            text.setVisibility(View.VISIBLE);
+
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void addList() {
-        String newItem = "New List" + taskLists.size();
+        TextView text = (TextView)findViewById(R.id.list_name);
+        String newItem = text.getText().toString();
+        if (newItem == null || newItem.isEmpty()) return;
         TaskList taskList = new TaskList(newItem);
         taskList = service.insertNewTaskList(taskList);
         taskLists.add(taskList);
         adapter.notifyDataSetChanged();
+        text.setVisibility(View.INVISIBLE);
     }
 
     /**

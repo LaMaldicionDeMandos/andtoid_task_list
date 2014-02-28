@@ -7,5 +7,6 @@
     <string name="action_new_list">New List</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="add_list_promp">New List name</string>
 
 </resources>
