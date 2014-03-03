@@ -2,6 +2,8 @@ package org.pasut.tasklist;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -15,21 +17,29 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.google.common.collect.Lists;
 
 import org.pasut.tasklist.entity.TaskList;
 
 import java.util.List;
 
 public class TaskListsActivity extends Activity {
+    private final static String SHARED_PREFERENCES_NAME = "task_list_preferences";
+    private final static String SELECTED_TASK_LIST = "selected_task_list";
     private List<TaskList> taskLists;
     private TaskListEntityService service;
     private ArrayAdapter<TaskList> adapter;
     private DrawerLayout drawer;
     private ActionBarDrawerToggle drawerToggle;
+    private SharedPreferences sharePreferences;
+
+    private TaskList selectedTaskList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,34 +48,46 @@ public class TaskListsActivity extends Activity {
 
         service = new TaskListEntityService(this);
 
-        taskLists = service.findAllTaskLists();
-        adapter = new ArrayAdapter<TaskList>(this, android.R.layout.simple_list_item_1, taskLists);
-        ListView list = (ListView)findViewById(R.id.list);
-        list.setAdapter(adapter);
-        list.setTextFilterEnabled(true);
+        sharePreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
 
-        final EditText text = (EditText)findViewById(R.id.list_name);
-        text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    addList();
-                    text.setVisibility(View.GONE);
-                    handled = true;
-                }
-                return handled;
-            }
-        });
+        selectedTaskList = findSelectedTaskList();
 
+
+        configureActionBar();
+        configureDrawer();
+        configureTaskListsView();
+        configureTaskView();
+    }
+
+    private TaskList findSelectedTaskList() {
+        Long id = sharePreferences.getLong(SELECTED_TASK_LIST, -1l);
+        return (id > -1l) ? service.findTaskListById(id) : null;
+    }
+
+    private void configureTaskView() {
+        configureTaskViewPlaceholder();
+        configureTaskList();
+    }
+
+    private void configureTaskList() {
+    }
+
+    private void configureTaskViewPlaceholder() {
+        TextView placeholder = (TextView)findViewById(R.id.task_list_placeholder);
+        if (selectedTaskList == null) {
+            placeholder.setText(R.string.no_task_list_selected);
+        } else {
+            placeholder.setText(R.string.empty_tasks_view);
+        }
+    }
+
+    private void configureDrawer() {
         drawer = (DrawerLayout) findViewById(R.id.container);
 
         // set a custom shadow that overlays the main content when the drawer opens
         drawer.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
 
-        // enable ActionBar app icon to behave as action to toggle nav drawer
-        getActionBar().setDisplayHomeAsUpEnabled(true);
         //getActionBar().setHomeButtonEnabled(true);
 
         // ActionBarDrawerToggle ties together the the proper interactions
@@ -78,7 +100,11 @@ public class TaskListsActivity extends Activity {
                 R.string.drawer_close  /* "close drawer" description for accessibility */
         ) {
             public void onDrawerClosed(View view) {
-                getActionBar().setTitle(R.string.task_list_view);
+                if (selectedTaskList == null) {
+                    getActionBar().setTitle(R.string.task_list_view);
+                } else {
+                    getActionBar().setTitle(selectedTaskList.getName());
+                }
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
@@ -88,8 +114,66 @@ public class TaskListsActivity extends Activity {
             }
         };
         drawer.setDrawerListener(drawerToggle);
-
     }
+
+    private void configureActionBar() {
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        if (selectedTaskList != null) {
+            getActionBar().setTitle(selectedTaskList.getName());
+        }
+    }
+
+    private void configureTaskListsView() {
+        configureTaskLists();
+        configureTaskListsPlaceholder();
+        configureNewTaskListText();
+    }
+
+    private void configureTaskListsPlaceholder() {
+        TextView placeholder = (TextView)findViewById(R.id.task_lists_placeholder);
+        if (taskLists.isEmpty()) {
+            placeholder.setText(R.string.empty_task_lists_view);
+        } else {
+            placeholder.setVisibility(View.GONE);
+        }
+    }
+
+    private void configureNewTaskListText() {
+        final EditText text = (EditText)findViewById(R.id.list_name);
+        text.setVisibility( taskLists.isEmpty() ? View.VISIBLE : View.GONE);
+        text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    addList();
+                    text.setVisibility(View.GONE);
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+    }
+
+    private void configureTaskLists() {
+        taskLists = service.findAllTaskLists();
+        adapter = new ArrayAdapter<TaskList>(this, android.R.layout.simple_list_item_1, taskLists);
+        ListView list = (ListView)findViewById(R.id.list);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedTaskList = (TaskList) parent.getAdapter().getItem(position);
+                saveAsSelected(selectedTaskList);
+                closeDrawer();
+                refreshView();
+            }
+        });
+        list.setAdapter(adapter);
+        list.setTextFilterEnabled(true);
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -113,24 +197,98 @@ public class TaskListsActivity extends Activity {
         }
         // Handle action buttons
         int id = item.getItemId();
-        if (id == R.id.action_new_list && drawer.isDrawerOpen(findViewById(R.id.drawer_view))) {
-            EditText text = (EditText)findViewById(R.id.list_name);
-            text.setVisibility(View.VISIBLE);
-
+        if (id == R.id.action_new_list) {
+            onNew();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void onNew() {
+        if (isOpenDrawer()) {
+            populateNewTaskList();
+        } else {
+            populateNewTask();
+        }
+    }
+
+    private void populateNewTaskList() {
+        showNewTaskList();
+    }
+
+    private void showNewTaskList() {
+        EditText text = (EditText)findViewById(R.id.list_name);
+        text.setVisibility(View.VISIBLE);
+    }
+
+    private void populateNewTask() {
+        if (selectedTaskList == null) {
+            openDrawer();
+            showNewTaskList();
+        }
+    }
+
+    public void onNewTask(View view) {
+        populateNewTask();
+    }
+
+    private void openDrawer() {
+        drawer.openDrawer(findViewById(R.id.drawer_view));
+    }
+
+    private void closeDrawer() {
+        drawer.closeDrawer(findViewById(R.id.drawer_view));
+    }
+
+    private boolean isOpenDrawer() {
+        return drawer.isDrawerOpen(findViewById(R.id.drawer_view));
+    }
+
+    private void refreshView() {
+        configureTaskListsPlaceholder();
+        configureTaskView();
+    }
+
     private void addList() {
-        TextView text = (TextView)findViewById(R.id.list_name);
-        String newItem = text.getText().toString();
+        String newItem = getItemName(R.id.list_name);
         if (newItem == null || newItem.isEmpty()) return;
-        TaskList taskList = new TaskList(newItem);
+        cleanTextView(R.id.list_name);
+        addToLists(newItem);
+        hideView(R.id.list_name);
+        closeDrawer();
+        refreshView();
+    }
+
+    private void hideView(int id) {
+        View view = findViewById(id);
+        view.setVisibility(View.GONE);
+    }
+
+    private void addToLists(String listName) {
+        TaskList taskList = new TaskList(listName);
         taskList = service.insertNewTaskList(taskList);
+        selectedTaskList = taskList;
         taskLists.add(taskList);
+        taskLists = Lists.reverse(taskLists);
         adapter.notifyDataSetChanged();
-        text.setVisibility(View.INVISIBLE);
+        saveAsSelected(taskList);
+    }
+
+    private void saveAsSelected(TaskList list) {
+        SharedPreferences.Editor editor = sharePreferences.edit();
+        editor.putLong(SELECTED_TASK_LIST, list.getId());
+        editor.commit();
+    }
+
+    private void cleanTextView(int id) {
+        TextView textView = (TextView)findViewById(id);
+        textView.setText("");
+    }
+
+    private String getItemName(int id) {
+        TextView textView = (TextView)findViewById(id);
+        String text = textView.getText().toString();
+        return text;
     }
 
     /**

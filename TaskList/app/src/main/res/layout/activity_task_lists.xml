@@ -7,12 +7,17 @@
 
     tools:context="org.pasut.tasklist.TaskListsActivity"
     >
-     <TextView android:text="TODO Implement"
-                  android:background="@android:color/white"
-                  android:textSize="40sp"
-                  android:gravity="center"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent"/>
+    <FrameLayout android:layout_width="match_parent"
+                 android:layout_height="match_parent">
+        <TextView android:id="@+id/task_list_placeholder"
+            android:textSize="40sp"
+            android:gravity="center"
+            android:clickable="true"
+            android:onClick="onNewTask"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </FrameLayout>
     <FrameLayout
         android:id="@+id/drawer_view"
         android:layout_width="300dp"
@@ -35,5 +40,12 @@
             android:imeOptions="actionDone"
             android:textAppearance="@android:style/TextAppearance.Large"
             />
+
+        <TextView android:id="@+id/task_lists_placeholder"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:textSize="40sp"
+                  android:gravity="center"/>
+
     </FrameLayout>
 </android.support.v4.widget.DrawerLayout>

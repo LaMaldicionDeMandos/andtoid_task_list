@@ -1,9 +1,12 @@
 package org.pasut.tasklist;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+
+import com.google.common.collect.Iterables;
 
 import org.pasut.tasklist.dataaccess.TaskListContentProvider;
 import org.pasut.tasklist.dataaccess.TaskListTable;
@@ -28,6 +31,14 @@ public class TaskListEntityService {
     public List<TaskList> findAllTaskLists() {
         Cursor cursor = context.getContentResolver().query(TaskListContentProvider.CONTENT_URI, null, null, null, null);
         return convertToTaskList(cursor);
+    }
+
+    public TaskList findTaskListById(Long id) {
+        Uri uri = TaskListContentProvider.CONTENT_URI_TASK_LIST_BY_ID;
+        uri = ContentUris.withAppendedId(uri, id);
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        List<TaskList> list = convertToTaskList(cursor);
+        return Iterables.getFirst(list, null);
     }
 
     private List<TaskList> convertToTaskList(Cursor cursor) {
