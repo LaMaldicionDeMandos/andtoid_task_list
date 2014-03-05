@@ -7,9 +7,13 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import org.pasut.tasklist.dataaccess.TaskListContentProvider;
 import org.pasut.tasklist.dataaccess.TaskListTable;
+import org.pasut.tasklist.dataaccess.TaskTable;
+import org.pasut.tasklist.dataaccess.TasksRelationTable;
+import org.pasut.tasklist.entity.Task;
 import org.pasut.tasklist.entity.TaskList;
 
 import java.util.ArrayList;
@@ -19,8 +23,41 @@ import java.util.List;
  * Created by marcelo on 18/02/14.
  */
 public class TaskListEntityService {
+
+    private static interface Converter<T> {
+        List<T> convert(Cursor cursor);
+    }
+
+    private static class TaskListConverter implements Converter<TaskList> {
+        @Override
+        public List<TaskList> convert(Cursor cursor) {
+            List<TaskList> list = Lists.newArrayList();
+            while (cursor.moveToNext()) {
+                TaskList taskList = new TaskList(cursor.getLong(TASK_LIST_ID_INDEX), cursor.getString(TASK_LIST_NAME_INDEX));
+                list.add(taskList);
+            }
+            return list;
+        }
+    }
+
+    private static class TaskConverter implements Converter<Task> {
+        @Override
+        public List<Task> convert(Cursor cursor) {
+            List<Task> list = Lists.newArrayList();
+            while (cursor.moveToNext()) {
+                Task task = new Task(cursor.getLong(TASK_ID_INDEX), cursor.getString(TASK_NAME_INDEX));
+                list.add(task);
+            }
+            return list;
+        }
+    }
+
+    private final static Converter<TaskList> TASK_LIST_CONVERTER = new TaskListConverter();
+    private final static Converter<Task> TASK_CONVERTER = new TaskConverter();
     private final static int TASK_LIST_ID_INDEX = 0;
     private final static int TASK_LIST_NAME_INDEX = 1;
+    private final static int TASK_ID_INDEX = 0;
+    private final static int TASK_NAME_INDEX = 1;
 
     private final Context context;
 
@@ -30,33 +67,53 @@ public class TaskListEntityService {
 
     public List<TaskList> findAllTaskLists() {
         Cursor cursor = context.getContentResolver().query(TaskListContentProvider.CONTENT_URI, null, null, null, null);
-        return convertToTaskList(cursor);
+        return TASK_LIST_CONVERTER.convert(cursor);
+    }
+
+    public List<Task> findAllTasks() {
+        Cursor cursor = context.getContentResolver().query(TaskListContentProvider.CONTENT_URI_TASKS, null, null, null, null);
+        return TASK_CONVERTER.convert(cursor);
     }
 
     public TaskList findTaskListById(Long id) {
         Uri uri = TaskListContentProvider.CONTENT_URI_TASK_LIST_BY_ID;
         uri = ContentUris.withAppendedId(uri, id);
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-        List<TaskList> list = convertToTaskList(cursor);
+        List<TaskList> list = TASK_LIST_CONVERTER.convert(cursor);
         return Iterables.getFirst(list, null);
     }
 
-    private List<TaskList> convertToTaskList(Cursor cursor) {
-        List<TaskList> list = new ArrayList<TaskList>();
-        while (cursor.moveToNext()) {
-            TaskList taskList = new TaskList(cursor.getLong(TASK_LIST_ID_INDEX), cursor.getString(TASK_LIST_NAME_INDEX));
-            list.add(taskList);
-        }
-        return list;
+    public List<Task> findTasksByListId(Long id) {
+        Uri uri = TaskListContentProvider.CONTENT_URI_TASK_BY_TASK_LIST;
+        uri = ContentUris.withAppendedId(uri, id);
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        return TASK_CONVERTER.convert(cursor);
     }
 
-    public TaskList insertNewTaskList(TaskList taskList) {
+    public TaskList insert(TaskList taskList) {
         ContentValues values = new ContentValues();
         values.put(TaskListTable.TASK_LIST_NAME, taskList.getName());
-        Uri uri = context.getContentResolver().insert(TaskListContentProvider.CONTENT_URI_TASK_LISTS, values);
+        return insertItem(taskList, values, TaskListContentProvider.CONTENT_URI_TASK_LISTS, TASK_LIST_CONVERTER);
+    }
+
+    public Task insert(Task task) {
+        ContentValues values = new ContentValues();
+        values.put(TaskTable.TASK_NAME, task.getName());
+        return insertItem(task, values, TaskListContentProvider.CONTENT_URI_TASKS, TASK_CONVERTER);
+    }
+
+    public void insertRelation(Long taskListId, Long taskId) {
+        ContentValues values = new ContentValues();
+        values.put(TasksRelationTable.LIST_ID, taskListId);
+        values.put(TasksRelationTable.TASK_ID, taskId);
+        context.getContentResolver().insert(TaskListContentProvider.CONTENT_URI_RELATION, values);
+    }
+
+    private <T> T insertItem(T item, ContentValues values, Uri uri, Converter<T> converter) {
+        uri = context.getContentResolver().insert(uri, values);
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-        List<TaskList> list = convertToTaskList(cursor);
+        List<T> list = converter.convert(cursor);
         if (list.isEmpty()) throw new RuntimeException("An error ocurred during the insert and can't vave de object");
-        return list.get(0);
+        return Iterables.getFirst(list, item);
     }
 }

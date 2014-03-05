@@ -11,5 +11,6 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="add_list_promp">New List name</string>
+    <string name="add_task_promp">New Task</string>
 
 </resources>

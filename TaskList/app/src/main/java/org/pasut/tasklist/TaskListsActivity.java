@@ -17,22 +17,26 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.common.collect.Lists;
-
+import org.pasut.tasklist.entity.Task;
 import org.pasut.tasklist.entity.TaskList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TaskListsActivity extends Activity {
     private final static String SHARED_PREFERENCES_NAME = "task_list_preferences";
     private final static String SELECTED_TASK_LIST = "selected_task_list";
     private List<TaskList> taskLists;
+    private List<Task> tasks;
+    private List<Task> currentTasks;
     private TaskListEntityService service;
     private ArrayAdapter<TaskList> adapter;
     private DrawerLayout drawer;
@@ -52,11 +56,17 @@ public class TaskListsActivity extends Activity {
 
         selectedTaskList = findSelectedTaskList();
 
+        tasks = findAllTasks();
 
         configureActionBar();
         configureDrawer();
         configureTaskListsView();
         configureTaskView();
+        configureNewTaskText();
+    }
+
+    private List<Task> findAllTasks() {
+        return service.findAllTasks();
     }
 
     private TaskList findSelectedTaskList() {
@@ -64,20 +74,112 @@ public class TaskListsActivity extends Activity {
         return (id > -1l) ? service.findTaskListById(id) : null;
     }
 
+    private List<Task> findSelectedTasks() {
+        return selectedTaskList == null ? new ArrayList<Task>()
+                : service.findTasksByListId(selectedTaskList.getId());
+    }
+
     private void configureTaskView() {
-        configureTaskViewPlaceholder();
         configureTaskList();
+        configureTaskViewPlaceholder();
+    }
+
+    private boolean selectedTaskListIsEmpty() {
+        return currentTasks == null || currentTasks.isEmpty();
+    }
+
+    private void configureNewTaskText() {
+        final AutoCompleteTextView text = (AutoCompleteTextView)findViewById(R.id.task_name);
+        final ArrayAdapter<Task> textAdapter = new ArrayAdapter<Task>(this, android.R.layout.simple_dropdown_item_1line, tasks);
+        text.setAdapter(textAdapter);
+        if (tasks.isEmpty() && selectedTaskList != null) {
+            text.requestFocus();
+            text.setVisibility(View.VISIBLE);
+        } else {
+            text.clearFocus();
+            text.setVisibility(View.INVISIBLE);
+        }
+        text.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Task task = textAdapter.getItem(position);
+                addTask(task);
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(text.getWindowToken(),
+                        InputMethodManager.RESULT_UNCHANGED_SHOWN);
+            }
+        });
+        text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                boolean handled = false;
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(text.getWindowToken(),
+                        InputMethodManager.RESULT_UNCHANGED_SHOWN);
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    int position = text.getListSelection();
+                    Task task = null;
+                    if (position != ListView.INVALID_POSITION) {
+                        task = textAdapter.getItem(position);
+                    } else {
+                        task = service.insert(new Task(text.getText().toString()));
+                        tasks.add(task);
+                        ArrayAdapter<Task> newAdapter = new ArrayAdapter<Task>(TaskListsActivity.this, android.R.layout.simple_dropdown_item_1line, tasks);
+                        text.setAdapter(newAdapter);
+
+                    }
+                    addTask(task);
+                    handled = true;
+                }
+                return handled;
+            }
+        });
+    }
+
+    private void addTask(Task task) {
+        cleanTextView(R.id.task_name);
+        addToTasks(task);
+        hideView(R.id.task_name);
+        refreshView();
+    }
+
+    private void addToTasks(Task task) {
+        service.insertRelation(selectedTaskList.getId(), task.getId());
+
     }
 
     private void configureTaskList() {
+        currentTasks = findSelectedTasks();
+        ArrayAdapter<Task> adapter = new ArrayAdapter<Task>(this, android.R.layout.simple_list_item_1, currentTasks);
+        ListView list = (ListView)findViewById(R.id.task_list);
+        list.setAdapter(adapter);
+        list.setTextFilterEnabled(true);
     }
 
     private void configureTaskViewPlaceholder() {
         TextView placeholder = (TextView)findViewById(R.id.task_list_placeholder);
+        placeholder.setOnClickListener(null);
         if (selectedTaskList == null) {
+            showView(R.id.task_list_placeholder);
             placeholder.setText(R.string.no_task_list_selected);
-        } else {
+            placeholder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openDrawer();
+                    populateNewTask();
+                }
+            });
+        } else if (selectedTaskListIsEmpty()) {
+            showView(R.id.task_list_placeholder);
             placeholder.setText(R.string.empty_tasks_view);
+            placeholder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    populateNewTask();
+                }
+            });
+        } else {
+            hideView(R.id.task_list_placeholder);
         }
     }
 
@@ -135,20 +237,29 @@ public class TaskListsActivity extends Activity {
         if (taskLists.isEmpty()) {
             placeholder.setText(R.string.empty_task_lists_view);
         } else {
-            placeholder.setVisibility(View.GONE);
+            hideView(R.id.task_lists_placeholder);
         }
     }
 
     private void configureNewTaskListText() {
         final EditText text = (EditText)findViewById(R.id.list_name);
-        text.setVisibility( taskLists.isEmpty() ? View.VISIBLE : View.GONE);
+        if (taskLists.isEmpty()) {
+            text.requestFocus();
+            text.setVisibility(View.VISIBLE);
+        } else {
+            text.clearFocus();
+            text.setVisibility(View.INVISIBLE);
+        }
         text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     addList();
-                    text.setVisibility(View.GONE);
+                    text.setVisibility(View.INVISIBLE);
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(),
+                            InputMethodManager.RESULT_UNCHANGED_SHOWN);
                     handled = true;
                 }
                 return handled;
@@ -218,6 +329,7 @@ public class TaskListsActivity extends Activity {
 
     private void showNewTaskList() {
         EditText text = (EditText)findViewById(R.id.list_name);
+        text.requestFocus();
         text.setVisibility(View.VISIBLE);
     }
 
@@ -225,6 +337,11 @@ public class TaskListsActivity extends Activity {
         if (selectedTaskList == null) {
             openDrawer();
             showNewTaskList();
+        } else {
+            showView(R.id.task_name);
+            View view = findViewById(R.id.task_name);
+            view.requestFocus();
+
         }
     }
 
@@ -259,17 +376,21 @@ public class TaskListsActivity extends Activity {
         refreshView();
     }
 
+    private void showView(int id) {
+        View view = findViewById(id);
+        view.setVisibility(View.VISIBLE);
+    }
+
     private void hideView(int id) {
         View view = findViewById(id);
-        view.setVisibility(View.GONE);
+        view.setVisibility(View.INVISIBLE);
     }
 
     private void addToLists(String listName) {
         TaskList taskList = new TaskList(listName);
-        taskList = service.insertNewTaskList(taskList);
+        taskList = service.insert(taskList);
         selectedTaskList = taskList;
         taskLists.add(taskList);
-        taskLists = Lists.reverse(taskLists);
         adapter.notifyDataSetChanged();
         saveAsSelected(taskList);
     }
@@ -283,6 +404,7 @@ public class TaskListsActivity extends Activity {
     private void cleanTextView(int id) {
         TextView textView = (TextView)findViewById(id);
         textView.setText("");
+        textView.clearFocus();
     }
 
     private String getItemName(int id) {
