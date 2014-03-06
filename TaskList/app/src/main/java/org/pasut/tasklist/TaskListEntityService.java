@@ -116,4 +116,10 @@ public class TaskListEntityService {
         if (list.isEmpty()) throw new RuntimeException("An error ocurred during the insert and can't vave de object");
         return Iterables.getFirst(list, item);
     }
+
+    public void deleteRelation(TaskList list, Task task) {
+        context.getContentResolver().delete(TaskListContentProvider.CONTENT_URI_RELATION,
+                TaskListContentProvider.DELETE_RELATION_TEMPLATE,
+                new String[]{list.getId().toString(), task.getId().toString()});
+    }
 }

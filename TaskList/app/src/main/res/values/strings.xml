@@ -12,5 +12,6 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="add_list_promp">New List name</string>
     <string name="add_task_promp">New Task</string>
+    <string name="delete_task">Deleting: %s</string>
 
 </resources>
