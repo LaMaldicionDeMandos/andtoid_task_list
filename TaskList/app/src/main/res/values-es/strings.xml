@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lista de Tareas</string>
+    <string name="task_list_view">Listas de Tareas</string>
+    <string name="task_view">Lista de Tareas</string>
+    <string name="empty_task_lists_view">No hay Listas</string>
+    <string name="no_task_list_selected">No hay ninguna lista seleccionada</string>
+    <string name="empty_tasks_view">Lista Vacía</string>
+    <string name="empty_list_message">La lista %s está vacía, ¿Deseas eliminarla?</string>
+    <string name="action_settings">Configuraciones</string>
+    <string name="action_new_list">Nueva Lista</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="add_list_promp">Nombre</string>
+    <string name="add_task_promp">Nueva Tarea</string>
+    <string name="delete_task">Borrando: %s</string>
+    <string name="yes">Si</string>
+    <string name="no">No</string>
+
+</resources>

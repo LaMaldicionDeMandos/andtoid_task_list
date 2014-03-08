@@ -1,8 +1,10 @@
 package org.pasut.tasklist;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -23,7 +25,12 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 
 import org.pasut.tasklist.entity.Task;
 import org.pasut.tasklist.entity.TaskList;
@@ -65,6 +72,14 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         configureTaskListsView();
         configureTaskView();
         configureNewTaskText();
+        configureBanner();
+    }
+
+    private void configureBanner() {
+        AdView banner = getBanner();
+        AdRequest request = new AdRequest.Builder()
+                .build();
+        banner.loadAd(request);
     }
 
     private List<Task> findAllTasks() {
@@ -117,8 +132,13 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
                     if (position != ListView.INVALID_POSITION) {
                         task = textAdapter.getItem(position);
                     } else {
-                        task = service.insert(new Task(text.getText().toString()));
-                        tasks.add(task);
+                        task = new Task(text.getText().toString());
+                        if (!tasks.contains(task)) {
+                            task = service.insert(task);
+                            tasks.add(task);
+                        } else {
+                            task = tasks.get(tasks.indexOf(task));
+                        }
                         ArrayAdapter<Task> newAdapter = new ArrayAdapter<Task>(TaskListsActivity.this, android.R.layout.simple_dropdown_item_1line, tasks);
                         text.setAdapter(newAdapter);
 
@@ -139,7 +159,9 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
 
     private void addToTasks(Task task) {
         service.insertRelation(selectedTaskList.getId(), task.getId());
-
+        currentTasks.add(task);
+        ListView list = (ListView)findViewById(R.id.task_list);
+        ((ArrayAdapter)list.getAdapter()).notifyDataSetChanged();
     }
 
     private void configureTaskList() {
@@ -148,6 +170,8 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         EnhancedListView list = (EnhancedListView)findViewById(R.id.task_list);
         list.setAdapter(adapter);
         list.setTextFilterEnabled(true);
+        list.setRequireTouchBeforeDismiss(false);
+        list.setUndoHideDelay(3000);
         list.setDismissCallback(this);
         list.enableSwipeToDismiss();
     }
@@ -219,7 +243,10 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         getActionBar().setDisplayHomeAsUpEnabled(true);
         if (selectedTaskList != null) {
             getActionBar().setTitle(selectedTaskList.getName());
+        } else {
+            getActionBar().setTitle(R.string.app_name);
         }
+
     }
 
     private void configureTaskListsView() {
@@ -365,7 +392,9 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
     }
 
     private void refreshView() {
+        configureActionBar();
         configureTaskListsPlaceholder();
+        configureTaskViewPlaceholder();
         configureTaskView();
     }
 
@@ -446,6 +475,25 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
             @Override
             public void discard() {
                 service.deleteRelation(selectedTaskList, task);
+                if(adapter.isEmpty()) {
+                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(TaskListsActivity.this);
+                    dialogBuilder.setTitle(R.string.empty_tasks_view);
+                    dialogBuilder.setMessage(String.format(getString(R.string.empty_list_message), selectedTaskList.getName()));
+                    dialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            service.deleteTaskList(selectedTaskList);
+                            ArrayAdapter<TaskList> listAdapter = (ArrayAdapter) ((ListView) findViewById(R.id.list)).getAdapter();
+                            listAdapter.remove(selectedTaskList);
+                            taskLists.remove(selectedTaskList);
+                            listAdapter.notifyDataSetChanged();
+                            selectedTaskList = null;
+                            refreshView();
+                        }
+                    });
+                    dialogBuilder.setNegativeButton(R.string.no, null);
+                    dialogBuilder.create().show();
+                }
             }
         };
     }
@@ -464,5 +512,38 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             return rootView;
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        AdView banner = getBanner();
+        if (banner!=null) {
+            banner.resume();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        AdView banner = getBanner();
+        if (banner!=null) {
+            banner.pause();
+        }
+        super.onPause();
+    }
+
+    /** Called before the activity is destroyed. */
+    @Override
+    public void onDestroy() {
+        AdView banner = getBanner();
+        if (banner!=null) {
+            banner.destroy();
+        }
+        super.onDestroy();
+    }
+
+    private AdView getBanner() {
+        return (AdView)findViewById(R.id.adView);
     }
 }

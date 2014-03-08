@@ -39,6 +39,7 @@ public class TaskListContentProvider extends ContentProvider {
     public static final Uri CONTENT_URI_TASK_BY_ID = Uri.parse(SCHEMA + AUTHORITY + "/" + TASK_ID);
     public static final Uri CONTENT_URI_TASK_BY_TASK_LIST = Uri.parse(SCHEMA + AUTHORITY + "/" + TASKS_BY_TASK_LIST);
     public static final Uri CONTENT_URI_RELATION = Uri.parse(SCHEMA + AUTHORITY + "/" + RELATION);
+    public static final String DELETE_TASK_LIST_TEMPLATE = TaskListTable._ID + "=?";
     public static final String DELETE_RELATION_TEMPLATE = TasksRelationTable.LIST_ID + "=? and "
             + TasksRelationTable.TASK_ID + "=?";
     private static final int TASK_LIST_INT = 1;
@@ -114,8 +115,11 @@ public class TaskListContentProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String where, String[] args) {
         SQLiteDatabase database = helper.getWritableDatabase();
-        if (uriMatcher.match(uri) == RELATION_INT) {
-            return database.delete(TasksRelationTable.TABLE_NAME, where, args);
+        switch (uriMatcher.match(uri)) {
+            case RELATION_INT:
+                return database.delete(TasksRelationTable.TABLE_NAME, where, args);
+            case TASK_LIST_INT:
+                return database.delete(TaskListTable.TABLE_NAME, where, args);
         }
         return 0;
     }
