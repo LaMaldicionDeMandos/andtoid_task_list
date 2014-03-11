@@ -1,5 +1,8 @@
 package org.pasut.tasklist;
 
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -18,6 +21,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -110,16 +116,16 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         final ArrayAdapter<Task> textAdapter = new ArrayAdapter<Task>(this, android.R.layout.simple_dropdown_item_1line, tasks);
         text.setAdapter(textAdapter);
         if (tasks.isEmpty() && selectedTaskList != null) {
-            showInputText(text);
+            showInputText(text, findViewById(R.id.task_list));
         } else {
-            hideInputText(text);
+            //hideInputText(text, findViewById(R.id.task_list));
         }
         text.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Task task = textAdapter.getItem(position);
                 addTask(task);
-                hideInputText(text);
+                hideInputText(text, findViewById(R.id.task_list));
             }
         });
         text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -146,7 +152,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
                     addTask(task);
                     handled = true;
                 }
-                hideInputText(text);
+                hideInputText(text, findViewById(R.id.task_list));
                 return handled;
             }
         });
@@ -264,28 +270,54 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         }
     }
 
-    private void showInputText(TextView text) {
-        text.setVisibility(View.VISIBLE);
+    private void showInputText(final TextView text, View objectBelow) {
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.toggleSoftInputFromWindow(text.getWindowToken(), InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_IMPLICIT_ONLY);
         text.requestFocus();
+        TranslateAnimation animation = (TranslateAnimation)AnimationUtils.loadAnimation(this, R.anim.show_text);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) { text.requestFocus(); }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+        text.startAnimation(animation);
+        text.setVisibility(View.VISIBLE);
+        objectBelow.startAnimation(animation);
     }
 
-    private void hideInputText(TextView text) {
+    private void hideInputText(final TextView text, View objectBelow) {
         text.clearFocus();
-        text.setVisibility(View.INVISIBLE);
         text.setText("");
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(text.getWindowToken(),
                 InputMethodManager.RESULT_UNCHANGED_SHOWN);
+        TranslateAnimation animation = (TranslateAnimation)AnimationUtils.loadAnimation(this, R.anim.hide_text);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) { text.setVisibility(View.GONE); }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+        text.startAnimation(animation);
+        objectBelow.startAnimation(animation);
+
     }
 
     private void configureNewTaskListText() {
         final EditText text = (EditText)findViewById(R.id.list_name);
         if (taskLists.isEmpty()) {
-            showInputText(text);
+            showInputText(text, findViewById(R.id.task_list));
         } else {
-            hideInputText(text);
+            //hideInputText(text, findViewById(R.id.list));
         }
         text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -293,7 +325,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
                 boolean handled = false;
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     addList();
-                    hideInputText(text);
+                    hideInputText(text, findViewById(R.id.list));
                     handled = true;
                 }
                 return handled;
@@ -363,7 +395,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
 
     private void showNewTaskList() {
         EditText text = (EditText)findViewById(R.id.list_name);
-        showInputText(text);
+        showInputText(text, findViewById(R.id.list));
     }
 
     private void populateNewTask() {
@@ -371,7 +403,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
             openDrawer();
             showNewTaskList();
         } else {
-            showInputText((TextView)findViewById(R.id.task_name));
+            showInputText((TextView)findViewById(R.id.task_name), findViewById(R.id.task_list));
         }
     }
 
