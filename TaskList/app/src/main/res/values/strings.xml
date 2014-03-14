@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">Task List</string>
     <string name="task_list_view">Task Lists</string>
     <string name="task_view">Task List</string>
@@ -16,5 +17,6 @@
     <string name="delete_task">Deleting: %s</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="loading">Loading...</string>
 
 </resources>

@@ -47,6 +47,8 @@ import java.util.List;
 import de.timroes.android.listview.EnhancedListView;
 
 public class TaskListsActivity extends Activity implements EnhancedListView.OnDismissCallback {
+    public final static String TASKS = "tasks";
+
     private final static String SHARED_PREFERENCES_NAME = "task_list_preferences";
     private final static String SELECTED_TASK_LIST = "selected_task_list";
     private List<TaskList> taskLists;
@@ -528,22 +530,6 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
                 }
             }
         };
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
     }
 
     @Override

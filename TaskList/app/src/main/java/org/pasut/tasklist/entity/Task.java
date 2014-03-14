@@ -1,9 +1,11 @@
 package org.pasut.tasklist.entity;
 
+import java.io.Serializable;
+
 /**
  * Created by marcelo on 03/03/14.
  */
-public class Task extends Identifiable {
+public class Task extends Identifiable implements Serializable {
     public Task(String name) {
         super(name);
     }

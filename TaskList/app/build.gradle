@@ -34,13 +34,17 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     compile 'com.android.support:support-v4:19.0.+'
     compile 'com.google.guava:guava:12.+'
-    //Necesary to dismiss swipe
     compile 'de.timroes.android:EnhancedListView:0.3.1@aar'
     compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.google.android.gms:play-services:+@aar'
+    compile fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    
+    
+    //Necesary to dismiss swipe
+    
+    
     //For Ads esta en libs
     //compile "com.google.android.gms:play-services:4.0.30"
-    compile 'com.google.android.gms:play-services:+@aar'
 }
