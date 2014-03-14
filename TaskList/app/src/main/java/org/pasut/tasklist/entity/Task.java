@@ -1,11 +1,12 @@
 package org.pasut.tasklist.entity;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Created by marcelo on 03/03/14.
  */
-public class Task extends Identifiable implements Serializable {
+public class Task extends Identifiable implements Parcelable {
     public Task(String name) {
         super(name);
     }
@@ -31,4 +32,29 @@ public class Task extends Identifiable implements Serializable {
     public int hashCode() {
         return getName().hashCode();
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(getId());
+        dest.writeString(getName());
+    }
+
+    private Task(Parcel in) {
+        this((Long) in.readValue(Long.class.getClassLoader()), in.readString());
+    }
+
+    public static Parcelable.Creator<Task> CREATOR = new Parcelable.Creator<Task>() {
+        public Task createFromParcel(Parcel source) {
+            return new Task(source);
+        }
+
+        public Task[] newArray(int size) {
+            return new Task[size];
+        }
+    };
 }

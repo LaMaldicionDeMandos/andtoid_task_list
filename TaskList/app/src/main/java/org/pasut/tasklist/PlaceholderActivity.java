@@ -10,9 +10,12 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -44,7 +47,7 @@ public class PlaceholderActivity extends Activity {
             @Override
             protected void onPostExecute(List<Task> tasks) {
                 Intent intent = new Intent(PlaceholderActivity.this, TaskListsActivity.class);
-                intent.putExtra(TaskListsActivity.TASKS, tasks.toArray(new Task[0]));
+                intent.putParcelableArrayListExtra(TaskListsActivity.TASKS, new ArrayList<Parcelable>(tasks));
                 startActivity(intent);
                 finish();
             }

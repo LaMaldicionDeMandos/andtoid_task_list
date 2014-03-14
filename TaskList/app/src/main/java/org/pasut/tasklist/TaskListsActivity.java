@@ -65,6 +65,9 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        tasks = getIntent().getParcelableArrayListExtra(TASKS);
+
         setContentView(R.layout.activity_task_lists);
 
         service = new TaskListEntityService(this);
@@ -72,8 +75,6 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         sharePreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
 
         selectedTaskList = findSelectedTaskList();
-
-        tasks = findAllTasks();
 
         configureActionBar();
         configureDrawer();
