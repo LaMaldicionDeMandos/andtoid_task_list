@@ -518,10 +518,10 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             service.deleteTaskList(selectedTaskList);
-                            ArrayAdapter<TaskList> listAdapter = (ArrayAdapter) ((ListView) findViewById(R.id.list)).getAdapter();
-                            listAdapter.remove(selectedTaskList);
                             taskLists.remove(selectedTaskList);
-                            listAdapter.notifyDataSetChanged();
+                            ListView listView = (ListView) findViewById(R.id.list);
+                            ArrayAdapter<TaskList> listAdapter = new ArrayAdapter<TaskList>(TaskListsActivity.this, android.R.layout.simple_list_item_1, taskLists);
+                            listView.setAdapter(listAdapter);
                             selectedTaskList = null;
                             refreshView();
                         }
