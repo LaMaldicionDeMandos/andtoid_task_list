@@ -33,6 +33,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -381,7 +382,15 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
             onNew();
             return true;
         }
+        if (id == R.id.action_clean_tasks) {
+            onCleanTasks();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onCleanTasks() {
+        service.cleanTasks();
     }
 
     private void onNew() {

@@ -7,7 +7,12 @@
           android:title="@string/action_new_list"
           android:showAsAction="always" />
     <item android:id="@+id/action_settings"
-          android:icon="@drawable/ic_action_settings"
+          android:icon="@drawable/ic_action_overflow"
         android:title="@string/action_settings"
-        android:showAsAction="collapseActionView" />
+        android:showAsAction="always" >
+        <menu>
+            <item android:id="@+id/action_clean_tasks"
+                  android:title="@string/action_clean_tasks"/>
+        </menu>
+    </item>
 </menu>

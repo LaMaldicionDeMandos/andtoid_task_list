@@ -128,4 +128,9 @@ public class TaskListEntityService {
                 TaskListContentProvider.DELETE_TASK_LIST_TEMPLATE,
                 new String[]{list.getId().toString()});
     }
+
+    public void cleanTasks() {
+        context.getContentResolver().delete(TaskListContentProvider.CONTENT_URI_TASKS,
+                TaskListContentProvider.DELETE_UNUSED_TASKS_TEMPLATE,null);
+    }
 }

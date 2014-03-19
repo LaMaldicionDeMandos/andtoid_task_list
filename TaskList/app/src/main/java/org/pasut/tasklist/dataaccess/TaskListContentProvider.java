@@ -39,9 +39,12 @@ public class TaskListContentProvider extends ContentProvider {
     public static final Uri CONTENT_URI_TASK_BY_ID = Uri.parse(SCHEMA + AUTHORITY + "/" + TASK_ID);
     public static final Uri CONTENT_URI_TASK_BY_TASK_LIST = Uri.parse(SCHEMA + AUTHORITY + "/" + TASKS_BY_TASK_LIST);
     public static final Uri CONTENT_URI_RELATION = Uri.parse(SCHEMA + AUTHORITY + "/" + RELATION);
+
     public static final String DELETE_TASK_LIST_TEMPLATE = TaskListTable._ID + "=?";
     public static final String DELETE_RELATION_TEMPLATE = TasksRelationTable.LIST_ID + "=? and "
             + TasksRelationTable.TASK_ID + "=?";
+    public static final String DELETE_UNUSED_TASKS_TEMPLATE = TaskTable._ID + " not in (select distinct " + TasksRelationTable.TASK_ID +
+            " from " + TasksRelationTable.TABLE_NAME + ")";
     private static final int TASK_LIST_INT = 1;
     private static final int TASK_LIST_ID_INT = 2;
     private static final int TASK_INT = 3;
@@ -120,6 +123,8 @@ public class TaskListContentProvider extends ContentProvider {
                 return database.delete(TasksRelationTable.TABLE_NAME, where, args);
             case TASK_LIST_INT:
                 return database.delete(TaskListTable.TABLE_NAME, where, args);
+            case TASK_INT:
+                return database.delete(TaskTable.TABLE_NAME, where, args);
         }
         return 0;
     }

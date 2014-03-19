@@ -9,6 +9,7 @@
     <string name="empty_list_message">La lista %s está vacía, ¿Deseas eliminarla?</string>
     <string name="action_settings">Configuraciones</string>
     <string name="action_new_list">Nueva Lista</string>
+    <string name="action_clean_tasks">Limpiar Tareas</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="add_list_promp">Nombre</string>
