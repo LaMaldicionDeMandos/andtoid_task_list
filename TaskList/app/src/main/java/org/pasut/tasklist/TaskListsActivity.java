@@ -391,6 +391,36 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
 
     private void onCleanTasks() {
         service.cleanTasks();
+        tasks = service.findAllTasks();
+        configureNewTaskText();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isNewTextVisible()) {
+            hideVisibleTextInput();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    private void hideVisibleTextInput() {
+        hideIfVisible((TextView)findViewById(R.id.list_name), findViewById(R.id.list));
+        hideIfVisible((TextView)findViewById(R.id.task_name), findViewById(R.id.task_list));
+
+    }
+
+    private void hideIfVisible(TextView text, View list) {
+        if (View.VISIBLE == text.getVisibility()) {
+            hideInputText(text, list);
+        }
+    }
+
+    private boolean isNewTextVisible() {
+        View newListText = findViewById(R.id.list_name);
+        View newTastText = findViewById(R.id.task_name);
+        return View.VISIBLE == newListText.getVisibility()
+                || View.VISIBLE == newTastText.getVisibility();
     }
 
     private void onNew() {

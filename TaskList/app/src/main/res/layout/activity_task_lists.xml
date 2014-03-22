@@ -17,6 +17,10 @@
             android:layout_below="@+id/task_name"
             android:layout_above="@+id/adView"
             />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/touch"/>
         <com.google.android.gms.ads.AdView android:id="@+id/adView"
                                            android:layout_width="wrap_content"
                                            android:layout_height="wrap_content"
