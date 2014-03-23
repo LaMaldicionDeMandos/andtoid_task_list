@@ -5,6 +5,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -83,6 +84,12 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         configureTaskView();
         configureNewTaskText();
         configureBanner();
+        launchTutotials();
+    }
+
+    private void launchTutotials() {
+        Dialog dialog = new HelpDialog(this);
+        dialog.show();
     }
 
     private void configureBanner() {

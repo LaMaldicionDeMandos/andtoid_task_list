@@ -19,5 +19,6 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="loading">Loading...</string>
-
+    <string name="tutorial_touch_logo">To see the lists, touch the logo in the action bar.</string>
+    <string name="tutorial_swipe">You can swipe from the left to the right too.</string>
 </resources>
