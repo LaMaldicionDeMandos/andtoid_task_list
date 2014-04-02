@@ -4,4 +4,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="commond_gap">10dp</dimen>
     <dimen name="help_font_size">18sp</dimen>
+    <dimen name="help_button_font_size">20sp</dimen>
+    <dimen name="help_button_padding_horizontal">50dp</dimen>
+    <dimen name="help_button_padding_vertical">10dp</dimen>
     </resources>

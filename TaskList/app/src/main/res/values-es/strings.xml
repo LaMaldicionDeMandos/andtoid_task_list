@@ -20,5 +20,5 @@
     <string name="loading">Cargando...</string>
     <string name="tutorial_touch_logo">Para ver las listas de tareas, tocar el logo en la barra de acciones.</string>
     <string name="tutorial_swipe">Tambien puedes deslizar el dedo desde el extremo izquierdo hacia la derecha.</string>
-
+    <string name="tutorial_ok">OK</string>
 </resources>

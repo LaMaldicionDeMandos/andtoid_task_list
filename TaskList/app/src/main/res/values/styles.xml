@@ -28,6 +28,17 @@
         <item name="android:textSize">@dimen/help_font_size</item>
     </style>
 
+    <style name="tutorial_button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/help_button_font_size</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingLeft">@dimen/help_button_padding_horizontal</item>
+        <item name="android:paddingRight">@dimen/help_button_padding_horizontal</item>
+        <item name="android:paddingTop">@dimen/help_button_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/help_button_padding_vertical</item>
+    </style>
+
     <style name="ButtonBarButton" />
 
 </resources>

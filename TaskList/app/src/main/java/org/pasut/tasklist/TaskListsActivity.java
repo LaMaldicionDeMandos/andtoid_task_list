@@ -1,12 +1,8 @@
 package org.pasut.tasklist;
 
-import android.animation.AnimatorInflater;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -16,12 +12,10 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
@@ -32,12 +26,9 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 
 import org.pasut.tasklist.entity.Task;
@@ -53,6 +44,10 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
 
     private final static String SHARED_PREFERENCES_NAME = "task_list_preferences";
     private final static String SELECTED_TASK_LIST = "selected_task_list";
+
+    private final static String DRAWER_TUTORIAL = "drawer_tutorial";
+    private final static String NEW_TASK_LIST_TUTORIAL = "new_task_list_tutorial";
+
     private List<TaskList> taskLists;
     private List<Task> tasks;
     private List<Task> currentTasks;
@@ -84,12 +79,27 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         configureTaskView();
         configureNewTaskText();
         configureBanner();
-        launchTutotials();
+        launchDrawerTutorial();
     }
 
-    private void launchTutotials() {
-        Dialog dialog = new HelpDialog(this);
-        dialog.show();
+    private void launchDrawerTutorial() {
+        if (!sharePreferences.contains(DRAWER_TUTORIAL)) {
+            Dialog dialog = new WithAnimatedTouchHelpDialog(
+                    this,
+                    R.layout.open_drawer_tutorial,
+                    new OnDismissTutotial(DRAWER_TUTORIAL),
+                    R.id.slider_touch,
+                    R.anim.help_slide,
+                    true);
+            dialog.show();
+        }
+    }
+
+    private void launchNewTaskListTutorial() {
+        if (!sharePreferences.contains(NEW_TASK_LIST_TUTORIAL)) {
+            Dialog dialog = new HelpDialog(this, R.layout.new_task_list_tutorial, new OnDismissTutotial(NEW_TASK_LIST_TUTORIAL));
+            dialog.show();
+        }
     }
 
     private void configureBanner() {
@@ -250,6 +260,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
             public void onDrawerOpened(View drawerView) {
                 getActionBar().setTitle(R.string.task_view);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                launchNewTaskListTutorial();
             }
         };
         drawer.setDrawerListener(drawerToggle);
@@ -610,5 +621,20 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
 
     private AdView getBanner() {
         return (AdView)findViewById(R.id.adView);
+    }
+
+    private class OnDismissTutotial implements DialogInterface.OnDismissListener {
+        private final String key;
+
+        public OnDismissTutotial(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public void onDismiss(DialogInterface dialog) {
+            SharedPreferences.Editor editor = sharePreferences.edit();
+            editor.putBoolean(key, true);
+            editor.commit();
+        }
     }
 }

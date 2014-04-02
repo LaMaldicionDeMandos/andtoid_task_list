@@ -3,32 +3,24 @@ package org.pasut.tasklist;
 import android.app.Dialog;
 import android.content.Context;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created by marcelo on 22/03/14.
  */
 public class HelpDialog extends Dialog {
 
-    public HelpDialog(Context context) {
+    public HelpDialog(Context context, int layout, OnDismissListener onDissmiss) {
         super(context, android.R.style.Theme_Translucent_NoTitleBar);
-        this.setContentView(R.layout.help);
-        final View touch = findViewById(R.id.slider_touch);
-        final Animation anim = AnimationUtils.loadAnimation(getContext(), R.anim.help_slide);
-        anim.setAnimationListener(new Animation.AnimationListener() {
+        this.setOnDismissListener(onDissmiss);
+        this.setContentView(layout);
+        View okButton = checkNotNull(findViewById(R.id.help_ok), "The layout must has a view with name \"R.id.help_ok\"");
+        okButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onAnimationStart(Animation animation) {}
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                animation.setStartOffset(0);
-                touch.startAnimation(animation);
+            public void onClick(View v) {
+                dismiss();
             }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
         });
-        touch.startAnimation(anim);
     }
 }
