@@ -2,7 +2,6 @@ package org.pasut.tasklist;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -47,6 +46,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
 
     private final static String DRAWER_TUTORIAL = "drawer_tutorial";
     private final static String NEW_TASK_LIST_TUTORIAL = "new_task_list_tutorial";
+    private final static String NEW_TASK_TUTORIAL = "new_task_tutorial";
 
     private List<TaskList> taskLists;
     private List<Task> tasks;
@@ -84,21 +84,26 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
 
     private void launchDrawerTutorial() {
         if (!sharePreferences.contains(DRAWER_TUTORIAL)) {
-            Dialog dialog = new WithAnimatedTouchHelpDialog(
-                    this,
-                    R.layout.open_drawer_tutorial,
-                    new OnDismissTutotial(DRAWER_TUTORIAL),
-                    R.id.slider_touch,
-                    R.anim.help_slide,
-                    true);
-            dialog.show();
+            new HelpDialog.Builder(this, R.layout.open_drawer_tutorial)
+                    .withDismissListener(new OnDismissTutotial(DRAWER_TUTORIAL))
+                    .addAnimation(R.id.slider_touch, R.anim.help_slide, true)
+                    .build().show();
         }
     }
 
     private void launchNewTaskListTutorial() {
         if (!sharePreferences.contains(NEW_TASK_LIST_TUTORIAL)) {
-            Dialog dialog = new HelpDialog(this, R.layout.new_task_list_tutorial, new OnDismissTutotial(NEW_TASK_LIST_TUTORIAL));
-            dialog.show();
+            new HelpDialog.Builder(this, R.layout.new_task_list_tutorial)
+                    .withDismissListener(new OnDismissTutotial(NEW_TASK_LIST_TUTORIAL))
+                    .build().show();
+        }
+    }
+
+    private void launchNewTaskTutorial() {
+        if (!sharePreferences.contains(NEW_TASK_TUTORIAL) && sharePreferences.contains(NEW_TASK_LIST_TUTORIAL)) {
+            new HelpDialog.Builder(this, R.layout.new_task_tutorial)
+                    .withDismissListener(new OnDismissTutotial(NEW_TASK_TUTORIAL))
+                    .build().show();
         }
     }
 
@@ -255,6 +260,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
                     getActionBar().setTitle(selectedTaskList.getName());
                 }
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                launchNewTaskTutorial();
             }
 
             public void onDrawerOpened(View drawerView) {

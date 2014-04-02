@@ -37,6 +37,7 @@
         <item name="android:paddingRight">@dimen/help_button_padding_horizontal</item>
         <item name="android:paddingTop">@dimen/help_button_padding_vertical</item>
         <item name="android:paddingBottom">@dimen/help_button_padding_vertical</item>
+        <item name="android:text">@string/tutorial_ok</item>
     </style>
 
     <style name="ButtonBarButton" />

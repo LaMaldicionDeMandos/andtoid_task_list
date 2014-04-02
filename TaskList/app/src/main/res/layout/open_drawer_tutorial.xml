@@ -22,7 +22,6 @@
 
         <Button android:id="@+id/help_ok"
             style="@style/tutorial_button"
-            android:text="@string/tutorial_ok"
             android:layout_alignParentBottom="true"
             android:layout_alignRight="@+id/action_bar_text"
             android:layout_alignEnd="@+id/action_bar_text"
