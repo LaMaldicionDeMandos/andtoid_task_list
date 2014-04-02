@@ -19,8 +19,9 @@
     <string name="no">No</string>
     <string name="loading">Cargando...</string>
     <string name="tutorial_touch_logo">Para ver las listas de tareas, tocar el logo en la barra de acciones.</string>
-    <string name="tutorial_swipe">Tambien puedes deslizar el dedo desde el extremo izquierdo hacia la derecha.</string>
+    <string name="tutorial_swipe_to_drawer">Tambien puedes deslizar el dedo desde el extremo izquierdo hacia la derecha.</string>
     <string name="tutorial_new_task_list">Para crear una nueva lista, solo toca el icono y luego dale un nombre a tu nueva lista.</string>
     <string name="tutorial_new_task">Para crear una nueva tarea, solo toca el icono y luego dale un nombre a tu nueva tarea.</string>
+    <string name="tutorial_swipe_to_delete">Para borrar una tarea, puedes deslizar el dedo desde la izquierda hacia la derecha.</string>
     <string name="tutorial_ok">OK</string>
 </resources>

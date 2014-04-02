@@ -47,6 +47,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
     private final static String DRAWER_TUTORIAL = "drawer_tutorial";
     private final static String NEW_TASK_LIST_TUTORIAL = "new_task_list_tutorial";
     private final static String NEW_TASK_TUTORIAL = "new_task_tutorial";
+    private final static String DELETE_TASK_TUTORIAL = "delete_task_tutorial";
 
     private List<TaskList> taskLists;
     private List<Task> tasks;
@@ -103,6 +104,15 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         if (!sharePreferences.contains(NEW_TASK_TUTORIAL) && sharePreferences.contains(NEW_TASK_LIST_TUTORIAL)) {
             new HelpDialog.Builder(this, R.layout.new_task_tutorial)
                     .withDismissListener(new OnDismissTutotial(NEW_TASK_TUTORIAL))
+                    .build().show();
+        }
+    }
+
+    private void launchDeleteTaskTutorial() {
+        if (!sharePreferences.contains(DELETE_TASK_TUTORIAL)) {
+            new HelpDialog.Builder(this, R.layout.delete_task_tutorial)
+                    .withDismissListener(new OnDismissTutotial(DELETE_TASK_TUTORIAL))
+                    .addAnimation(R.id.slider_touch, R.anim.help_slide, true)
                     .build().show();
         }
     }
@@ -194,6 +204,9 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         currentTasks.add(task);
         ListView list = (ListView)findViewById(R.id.task_list);
         ((ArrayAdapter)list.getAdapter()).notifyDataSetChanged();
+        if (currentTasks.size()==2) {
+            launchDeleteTaskTutorial();
+        }
     }
 
     private void configureTaskList() {

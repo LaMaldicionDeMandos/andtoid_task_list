@@ -40,7 +40,7 @@
                android:layout_marginTop="-70dp"/>
     <TextView
         style="@style/tutorial_font"
-        android:text="@string/tutorial_swipe"
+        android:text="@string/tutorial_swipe_to_drawer"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="20dp" />
 
