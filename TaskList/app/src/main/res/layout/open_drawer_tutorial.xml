@@ -34,8 +34,8 @@
     <ImageView android:id="@+id/slider_touch"
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"
-               android:layout_marginLeft="-20dp"
-               android:layout_gravity="center_vertical"
+               android:layout_marginRight="-20dp"
+               android:layout_gravity="center_vertical|right"
                android:background="@drawable/touch"
                android:layout_marginTop="-70dp"/>
     <TextView

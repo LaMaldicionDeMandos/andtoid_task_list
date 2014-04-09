@@ -16,7 +16,6 @@ import org.pasut.tasklist.dataaccess.TasksRelationTable;
 import org.pasut.tasklist.entity.Task;
 import org.pasut.tasklist.entity.TaskList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -103,9 +102,17 @@ public class TaskListEntityService {
     }
 
     public void insertRelation(Long taskListId, Long taskId) {
+        Uri uri = TaskListContentProvider.CONTENT_URI_RELATION_LAST_ORDER;
+        uri = ContentUris.withAppendedId(uri, taskListId);
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        int order = 0;
+        if(cursor.moveToNext()) {
+            order = cursor.getInt(cursor.getColumnIndex(TasksRelationTable.ORDER)) + 1;
+        }
         ContentValues values = new ContentValues();
         values.put(TasksRelationTable.LIST_ID, taskListId);
         values.put(TasksRelationTable.TASK_ID, taskId);
+        values.put(TasksRelationTable.ORDER, order);
         context.getContentResolver().insert(TaskListContentProvider.CONTENT_URI_RELATION, values);
     }
 

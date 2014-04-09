@@ -20,7 +20,7 @@
     <string name="no">No</string>
     <string name="loading">Loading...</string>
     <string name="tutorial_touch_logo">To see the lists, touch the logo in the action bar.</string>
-    <string name="tutorial_swipe_to_drawer">You can swipe from the left to the right too.</string>
+    <string name="tutorial_swipe_to_drawer">You can swipe from the right to the left too.</string>
     <string name="tutorial_new_task_list">To create a new list, just touch the icon and then give a name to your new list.</string>
     <string name="tutorial_new_task">To create a new task, just touch the icon and then give a name to your new task.</string>
     <string name="tutorial_swipe_to_delete">To delete a task, you can swipe from the left to the right.</string>

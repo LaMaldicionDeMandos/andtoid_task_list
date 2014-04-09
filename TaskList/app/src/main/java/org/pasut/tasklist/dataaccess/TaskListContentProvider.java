@@ -31,6 +31,7 @@ public class TaskListContentProvider extends ContentProvider {
     private static final String TASKS_BY_TASK_LIST = "tasks_by_task_list/#";
     private static final String TASK_ID = "task/#";
     private static final String RELATION = "relation";
+    private static final String RELATION_LAST_ORDER = "relation_last_order/#";
 
     public static final Uri CONTENT_URI = Uri.parse(SCHEMA + AUTHORITY + "/" + TASK_LIST);
     public static final Uri CONTENT_URI_TASK_LISTS = CONTENT_URI;
@@ -39,6 +40,7 @@ public class TaskListContentProvider extends ContentProvider {
     public static final Uri CONTENT_URI_TASK_BY_ID = Uri.parse(SCHEMA + AUTHORITY + "/" + TASK_ID);
     public static final Uri CONTENT_URI_TASK_BY_TASK_LIST = Uri.parse(SCHEMA + AUTHORITY + "/" + TASKS_BY_TASK_LIST);
     public static final Uri CONTENT_URI_RELATION = Uri.parse(SCHEMA + AUTHORITY + "/" + RELATION);
+    public static final Uri CONTENT_URI_RELATION_LAST_ORDER = Uri.parse(SCHEMA + AUTHORITY + "/" + RELATION_LAST_ORDER);
 
     public static final String DELETE_TASK_LIST_TEMPLATE = TaskListTable._ID + "=?";
     public static final String DELETE_RELATION_TEMPLATE = TasksRelationTable.LIST_ID + "=? and "
@@ -51,6 +53,7 @@ public class TaskListContentProvider extends ContentProvider {
     private static final int TASK_ID_INT = 4;
     private static final int TASKS_BY_TASK_LIST_ID_INT = 5;
     private static final int RELATION_INT = 6;
+    private static final int RELATION_ORDER_INT = 7;
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -60,6 +63,7 @@ public class TaskListContentProvider extends ContentProvider {
         uriMatcher.addURI(AUTHORITY, TASK_ID, TASK_ID_INT);
         uriMatcher.addURI(AUTHORITY, TASKS_BY_TASK_LIST, TASKS_BY_TASK_LIST_ID_INT);
         uriMatcher.addURI(AUTHORITY, RELATION, RELATION_INT);
+        uriMatcher.addURI(AUTHORITY, RELATION_LAST_ORDER, RELATION_ORDER_INT);
     }
 
     private TaskListOpenHelper helper;
@@ -84,6 +88,8 @@ public class TaskListContentProvider extends ContentProvider {
                 return findTaskById(Long.valueOf(uri.getPathSegments().get(1)));
             case TASKS_BY_TASK_LIST_ID_INT:
                 return findTasksByTaskListId(Long.valueOf(uri.getPathSegments().get(1)));
+            case RELATION_ORDER_INT:
+                return findLastRelationOrderBy(Long.valueOf(uri.getPathSegments().get(1)));
             default:
                 return null;
         }
@@ -179,6 +185,17 @@ public class TaskListContentProvider extends ContentProvider {
         builder.setProjectionMap(map);
         builder.appendWhere(String.format(EQUALS_NUMBER_TEMPLATE, TasksRelationTable.LIST_ID, id)
         + " AND " + String.format(EQUALS_STRING_TEMPLATE, TasksRelationTable.TASK_ID, TaskTable._ID));
+        return builder.query(db, null, null, null, null, null, TasksRelationTable.ORDER);
+    }
+
+    private Cursor findLastRelationOrderBy(Long id) {
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+        builder.setTables(TasksRelationTable.TABLE_NAME);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Map<String, String> map = Maps.newHashMap();
+        map.put("max(" + TasksRelationTable.ORDER + ")", TasksRelationTable.ORDER);
+        builder.setProjectionMap(map);
+        builder.appendWhere(String.format(EQUALS_NUMBER_TEMPLATE, TasksRelationTable.LIST_ID, id));
         return builder.query(db, null, null, null, null, null, null);
     }
 }

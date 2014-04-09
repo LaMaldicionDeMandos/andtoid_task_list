@@ -87,7 +87,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         if (!sharePreferences.contains(DRAWER_TUTORIAL)) {
             new HelpDialog.Builder(this, R.layout.open_drawer_tutorial)
                     .withDismissListener(new OnDismissTutotial(DRAWER_TUTORIAL))
-                    .addAnimation(R.id.slider_touch, R.anim.help_slide, true)
+                    .addAnimation(R.id.slider_touch, R.anim.help_slide_right, true)
                     .build().show();
         }
     }
@@ -252,7 +252,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         drawer = (DrawerLayout) findViewById(R.id.container);
 
         // set a custom shadow that overlays the main content when the drawer opens
-        drawer.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        drawer.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.END);
         // set up the drawer's list view with items and click listener
 
         //getActionBar().setHomeButtonEnabled(true);
@@ -410,11 +410,21 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
     public boolean onOptionsItemSelected(MenuItem item) {
         // The action bar home/up action should open or close the drawer.
         // ActionBarDrawerToggle will take care of this.
-        if (drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
+
+        //No funciona para los drawers a la derecha
+//        if (drawerToggle.onOptionsItemSelected(item)) {
+//            return true;
+//        }
         // Handle action buttons
         int id = item.getItemId();
+        if (id == android.R.id.home) {
+            if (isOpenDrawer()) {
+                closeDrawer();
+            } else {
+                openDrawer();
+            }
+        }
+
         if (id == R.id.action_new_list) {
             onNew();
             return true;

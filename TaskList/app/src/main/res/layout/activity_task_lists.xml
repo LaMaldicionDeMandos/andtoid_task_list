@@ -45,9 +45,12 @@
     </RelativeLayout>
     <RelativeLayout
         android:id="@+id/drawer_view"
-        android:layout_width="300dp"
+        android:layout_width="280dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
+        android:layout_gravity="end"
+        android:background="@android:color/white"
+        android:paddingLeft="@dimen/commond_gap"
+        android:paddingRight="@dimen/commond_gap"
         >
         <ListView android:id="@+id/list"
                   android:layout_width="match_parent"
