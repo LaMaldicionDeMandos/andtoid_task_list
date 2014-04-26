@@ -8,5 +8,5 @@ public interface TasksRelationTable {
 
     public final static String TASK_ID = "task_id";
     public final static String LIST_ID = "list_id";
-    public final static String ORDER = "order";
+    public final static String ORDER = "relation_order";
 }

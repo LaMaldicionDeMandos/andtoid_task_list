@@ -116,6 +116,17 @@ public class TaskListEntityService {
         context.getContentResolver().insert(TaskListContentProvider.CONTENT_URI_RELATION, values);
     }
 
+    public void updateRelationOrder(TaskList taskList, List<Task> tasks) {
+        Uri uri = TaskListContentProvider.CONTENT_URI_RELATION;
+        for (int i = 0; i < tasks.size(); i++) {
+            ContentValues values = new ContentValues();
+            values.put(TasksRelationTable.ORDER, i);
+            Long taskId = tasks.get(i).getId();
+            context.getContentResolver().update(uri, values, TaskListContentProvider.UPDATE_RELATION_TEMPLATE,
+                    new String[]{taskList.getId().toString(), taskId.toString()});
+        }
+    }
+
     private <T> T insertItem(T item, ContentValues values, Uri uri, Converter<T> converter) {
         uri = context.getContentResolver().insert(uri, values);
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);

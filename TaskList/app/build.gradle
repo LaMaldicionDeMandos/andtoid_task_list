@@ -36,8 +36,7 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:19.0.+'
     compile 'com.google.guava:guava:12.+'
-    compile 'de.timroes.android:EnhancedListView:0.3.1@aar'
-    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.nhaarman.listviewanimations:library:2.6.0'
     compile 'com.google.android.gms:play-services:+@aar'
     compile fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     

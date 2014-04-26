@@ -11,7 +11,7 @@
     <RelativeLayout android:id="@+id/main_content"
         android:layout_width="match_parent"
                  android:layout_height="match_parent">
-        <de.timroes.android.listview.EnhancedListView android:id="@+id/task_list"
+        <com.nhaarman.listviewanimations.widget.DynamicListView android:id="@+id/task_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/task_name"

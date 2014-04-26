@@ -11,10 +11,12 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
@@ -29,6 +31,8 @@ import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.nhaarman.listviewanimations.itemmanipulation.swipedismiss.contextualundo.ContextualUndoAdapter;
+import com.nhaarman.listviewanimations.widget.DynamicListView;
 
 import org.pasut.tasklist.entity.Task;
 import org.pasut.tasklist.entity.TaskList;
@@ -36,9 +40,7 @@ import org.pasut.tasklist.entity.TaskList;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.timroes.android.listview.EnhancedListView;
-
-public class TaskListsActivity extends Activity implements EnhancedListView.OnDismissCallback {
+public class TaskListsActivity extends Activity implements ContextualUndoAdapter.DeleteItemCallback {
     public final static String TASKS = "tasks";
 
     private final static String SHARED_PREFERENCES_NAME = "task_list_preferences";
@@ -54,6 +56,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
     private List<Task> currentTasks;
     private TaskListEntityService service;
     private ArrayAdapter<TaskList> adapter;
+    private com.nhaarman.listviewanimations.ArrayAdapter<Task> taskAdapter;
     private DrawerLayout drawer;
     private ActionBarDrawerToggle drawerToggle;
     private SharedPreferences sharePreferences;
@@ -122,10 +125,6 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         AdRequest request = new AdRequest.Builder()
                 .build();
         banner.loadAd(request);
-    }
-
-    private List<Task> findAllTasks() {
-        return service.findAllTasks();
     }
 
     private TaskList findSelectedTaskList() {
@@ -203,7 +202,7 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
         service.insertRelation(selectedTaskList.getId(), task.getId());
         currentTasks.add(task);
         ListView list = (ListView)findViewById(R.id.task_list);
-        ((ArrayAdapter)list.getAdapter()).notifyDataSetChanged();
+        taskAdapter.notifyDataSetChanged();
         if (currentTasks.size()==2) {
             launchDeleteTaskTutorial();
         }
@@ -211,14 +210,12 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
 
     private void configureTaskList() {
         currentTasks = findSelectedTasks();
-        ArrayAdapter<Task> adapter = new ArrayAdapter<Task>(this, android.R.layout.simple_list_item_1, currentTasks);
-        EnhancedListView list = (EnhancedListView)findViewById(R.id.task_list);
+        taskAdapter = new MyAdapter(this, currentTasks);
+        DynamicListView list = (DynamicListView)findViewById(R.id.task_list);
+        ContextualUndoAdapter adapter = new ContextualUndoAdapter(taskAdapter, R.layout.view_undo, R.id.undo, getResources().getInteger(R.integer.time_to_live_undo),this);
+        adapter.setAbsListView(list);
         list.setAdapter(adapter);
         list.setTextFilterEnabled(true);
-        list.setRequireTouchBeforeDismiss(false);
-        list.setUndoHideDelay(3000);
-        list.setDismissCallback(this);
-        list.enableSwipeToDismiss();
     }
 
     private void configureTaskViewPlaceholder() {
@@ -578,45 +575,31 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
     }
 
     @Override
-    public EnhancedListView.Undoable onDismiss(EnhancedListView listView, final int position) {
-        final ArrayAdapter<Task> adapter = (ArrayAdapter<Task>)listView.getAdapter();
-        final Task task = adapter.getItem(position);
-        adapter.remove(task);
-        return new EnhancedListView.Undoable() {
-            @Override
-            public void undo() {
-               adapter.insert(task, position);
-            }
-
-            @Override
-            public String getTitle() {
-                return String.format(getString(R.string.delete_task), task);
-            }
-
-            @Override
-            public void discard() {
-                service.deleteRelation(selectedTaskList, task);
-                if(adapter.isEmpty()) {
-                    AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(TaskListsActivity.this);
-                    dialogBuilder.setTitle(R.string.empty_tasks_view);
-                    dialogBuilder.setMessage(String.format(getString(R.string.empty_list_message), selectedTaskList.getName()));
-                    dialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            service.deleteTaskList(selectedTaskList);
-                            taskLists.remove(selectedTaskList);
-                            ListView listView = (ListView) findViewById(R.id.list);
-                            ArrayAdapter<TaskList> listAdapter = new ArrayAdapter<TaskList>(TaskListsActivity.this, android.R.layout.simple_list_item_1, taskLists);
-                            listView.setAdapter(listAdapter);
-                            selectedTaskList = null;
-                            refreshView();
-                        }
-                    });
-                    dialogBuilder.setNegativeButton(R.string.no, null);
-                    dialogBuilder.create().show();
+    public void deleteItem(int position) {
+        final Task task = taskAdapter.getItem(position);
+        taskAdapter.remove(task);
+        taskAdapter.notifyDataSetChanged();
+        service.deleteRelation(selectedTaskList, task);
+        service.updateRelationOrder(selectedTaskList, currentTasks);
+        if (taskAdapter.isEmpty()) {
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(TaskListsActivity.this);
+            dialogBuilder.setTitle(R.string.empty_tasks_view);
+            dialogBuilder.setMessage(String.format(getString(R.string.empty_list_message), selectedTaskList.getName()));
+            dialogBuilder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    service.deleteTaskList(selectedTaskList);
+                    taskLists.remove(selectedTaskList);
+                    ListView listView = (ListView) findViewById(R.id.list);
+                    ArrayAdapter<TaskList> listAdapter = new ArrayAdapter<TaskList>(TaskListsActivity.this, android.R.layout.simple_list_item_1, taskLists);
+                    listView.setAdapter(listAdapter);
+                    selectedTaskList = null;
+                    refreshView();
                 }
-            }
-        };
+            });
+            dialogBuilder.setNegativeButton(R.string.no, null);
+            dialogBuilder.create().show();
+        }
     }
 
     @Override
@@ -664,6 +647,42 @@ public class TaskListsActivity extends Activity implements EnhancedListView.OnDi
             SharedPreferences.Editor editor = sharePreferences.edit();
             editor.putBoolean(key, true);
             editor.commit();
+        }
+    }
+
+    private class MyAdapter extends com.nhaarman.listviewanimations.ArrayAdapter<Task> {
+
+        private Context mContext;
+
+        public MyAdapter(Context context, List<Task> items) {
+            super(items);
+            mContext = context;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return getItem(position).hashCode();
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
+
+        @Override
+        public void swapItems(int positionOne, int positionTwo) {
+            super.swapItems(positionOne, positionTwo);
+            service.updateRelationOrder(selectedTaskList, currentTasks);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TextView tv = (TextView) convertView;
+            if (tv == null) {
+                tv = (TextView) LayoutInflater.from(mContext).inflate(android.R.layout.simple_list_item_1, parent, false);
+            }
+            tv.setText(getItem(position).toString());
+            return tv;
         }
     }
 }

@@ -47,6 +47,9 @@ public class TaskListContentProvider extends ContentProvider {
             + TasksRelationTable.TASK_ID + "=?";
     public static final String DELETE_UNUSED_TASKS_TEMPLATE = TaskTable._ID + " not in (select distinct " + TasksRelationTable.TASK_ID +
             " from " + TasksRelationTable.TABLE_NAME + ")";
+
+    public static final String UPDATE_RELATION_TEMPLATE = TasksRelationTable.LIST_ID + "=? and "
+            + TasksRelationTable.TASK_ID + "=?";
     private static final int TASK_LIST_INT = 1;
     private static final int TASK_LIST_ID_INT = 2;
     private static final int TASK_INT = 3;
@@ -137,6 +140,11 @@ public class TaskListContentProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
+        SQLiteDatabase database = helper.getWritableDatabase();
+        switch (uriMatcher.match(uri)) {
+            case RELATION_INT:
+                return database.update(TasksRelationTable.TABLE_NAME, contentValues, s, strings);
+        }
         return 0;
     }
 

@@ -24,4 +24,6 @@
     <string name="tutorial_new_task">Para crear una nueva tarea, solo toca el icono y luego dale un nombre a tu nueva tarea.</string>
     <string name="tutorial_swipe_to_delete">Para borrar una tarea, puedes deslizar el dedo desde la izquierda hacia la derecha.</string>
     <string name="tutorial_ok">OK</string>
+    <string name="undo_task">Tarea borrada</string>
+    <string name="undo_tap">Tocar para deshacer</string>
 </resources>

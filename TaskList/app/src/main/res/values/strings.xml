@@ -25,4 +25,8 @@
     <string name="tutorial_new_task">To create a new task, just touch the icon and then give a name to your new task.</string>
     <string name="tutorial_swipe_to_delete">To delete a task, you can swipe from the left to the right.</string>
     <string name="tutorial_ok">OK</string>
+    <string name="undo_task">Task Deleted</string>
+    <string name="undo_tap">Tap to undo</string>
+
+    <integer name="time_to_live_undo">3000</integer>
 </resources>
