@@ -593,6 +593,7 @@ public class TaskListsActivity extends Activity implements ContextualUndoAdapter
                     ListView listView = (ListView) findViewById(R.id.list);
                     ArrayAdapter<TaskList> listAdapter = new ArrayAdapter<TaskList>(TaskListsActivity.this, android.R.layout.simple_list_item_1, taskLists);
                     listView.setAdapter(listAdapter);
+                    listAdapter.notifyDataSetChanged();
                     selectedTaskList = null;
                     refreshView();
                 }
