@@ -66,12 +66,16 @@ public class TaskListEntityService {
 
     public List<TaskList> findAllTaskLists() {
         Cursor cursor = context.getContentResolver().query(TaskListContentProvider.CONTENT_URI, null, null, null, null);
-        return TASK_LIST_CONVERTER.convert(cursor);
+        List<TaskList> list = TASK_LIST_CONVERTER.convert(cursor);
+        cursor.close();
+        return list;
     }
 
     public List<Task> findAllTasks() {
         Cursor cursor = context.getContentResolver().query(TaskListContentProvider.CONTENT_URI_TASKS, null, null, null, null);
-        return TASK_CONVERTER.convert(cursor);
+        List<Task> list = TASK_CONVERTER.convert(cursor);
+        cursor.close();
+        return list;
     }
 
     public TaskList findTaskListById(Long id) {
@@ -79,6 +83,7 @@ public class TaskListEntityService {
         uri = ContentUris.withAppendedId(uri, id);
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
         List<TaskList> list = TASK_LIST_CONVERTER.convert(cursor);
+        cursor.close();
         return Iterables.getFirst(list, null);
     }
 
@@ -86,7 +91,9 @@ public class TaskListEntityService {
         Uri uri = TaskListContentProvider.CONTENT_URI_TASK_BY_TASK_LIST;
         uri = ContentUris.withAppendedId(uri, id);
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
-        return TASK_CONVERTER.convert(cursor);
+        List<Task> list = TASK_CONVERTER.convert(cursor);
+        cursor.close();
+        return list;
     }
 
     public TaskList insert(TaskList taskList) {
@@ -109,6 +116,7 @@ public class TaskListEntityService {
         if(cursor.moveToNext()) {
             order = cursor.getInt(cursor.getColumnIndex(TasksRelationTable.ORDER)) + 1;
         }
+        cursor.close();
         ContentValues values = new ContentValues();
         values.put(TasksRelationTable.LIST_ID, taskListId);
         values.put(TasksRelationTable.TASK_ID, taskId);
@@ -131,6 +139,7 @@ public class TaskListEntityService {
         uri = context.getContentResolver().insert(uri, values);
         Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
         List<T> list = converter.convert(cursor);
+        cursor.close();
         if (list.isEmpty()) throw new RuntimeException("An error ocurred during the insert and can't vave de object");
         return Iterables.getFirst(list, item);
     }
