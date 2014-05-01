@@ -50,6 +50,7 @@ public class TaskListsActivity extends Activity implements ContextualUndoAdapter
     private final static String NEW_TASK_LIST_TUTORIAL = "new_task_list_tutorial";
     private final static String NEW_TASK_TUTORIAL = "new_task_tutorial";
     private final static String DELETE_TASK_TUTORIAL = "delete_task_tutorial";
+    private final static String ORDER_TASK_TUTORIAL = "order_task_tutorial";
 
     private List<TaskList> taskLists;
     private List<Task> tasks;
@@ -116,6 +117,15 @@ public class TaskListsActivity extends Activity implements ContextualUndoAdapter
             new HelpDialog.Builder(this, R.layout.delete_task_tutorial)
                     .withDismissListener(new OnDismissTutotial(DELETE_TASK_TUTORIAL))
                     .addAnimation(R.id.slider_touch, R.anim.help_slide, true)
+                    .build().show();
+        }
+    }
+
+    private void launchOrderTaskTutorial() {
+        if (!sharePreferences.contains(ORDER_TASK_TUTORIAL)) {
+            new HelpDialog.Builder(this, R.layout.order_tasks_tutorial)
+                    .withDismissListener(new OnDismissTutotial(ORDER_TASK_TUTORIAL))
+                    //.addAnimation(R.id.slider_touch, R.anim.help_slide, true)
                     .build().show();
         }
     }
@@ -205,6 +215,9 @@ public class TaskListsActivity extends Activity implements ContextualUndoAdapter
         taskAdapter.notifyDataSetChanged();
         if (currentTasks.size()==2) {
             launchDeleteTaskTutorial();
+        }
+        if (currentTasks.size()==4) {
+            launchOrderTaskTutorial();
         }
     }
 
